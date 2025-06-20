@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as tf from '@tensorflow/tfjs-node';
 import { setupLogger } from '../utils/logger';
 import { AnalysisResult } from '../types/analysis';
@@ -6,9 +7,9 @@ import path from 'path';
 const logger = setupLogger();
 
 interface Models {
-  textClassifier: tf.GraphModel | null;
-  sentimentAnalyzer: tf.GraphModel | null;
-  biasDetector: tf.GraphModel | null;
+  textClassifier: any;
+  sentimentAnalyzer: any;
+  biasDetector: any;
 }
 
 let models: Models = {
@@ -88,24 +89,24 @@ function preprocessText(text: string): number[] {
   return Array(512).fill(0);
 }
 
-async function runTextClassification(tensor: tf.Tensor) {
+async function runTextClassification(tensor: any) {
   if (!models.textClassifier) {
     throw new Error('Text classification model not initialized');
   }
 
-  const prediction = await models.textClassifier.predict(tensor) as tf.Tensor;
+  const prediction = await models.textClassifier.predict(tensor) as any;
   const score = (await prediction.data())[0];
   prediction.dispose();
 
   return { score };
 }
 
-async function analyzeSentiment(tensor: tf.Tensor) {
+async function analyzeSentiment(tensor: any) {
   if (!models.sentimentAnalyzer) {
     throw new Error('Sentiment analysis model not initialized');
   }
 
-  const prediction = await models.sentimentAnalyzer.predict(tensor) as tf.Tensor;
+  const prediction = await models.sentimentAnalyzer.predict(tensor) as any;
   const scores = await prediction.data();
   prediction.dispose();
 
@@ -116,12 +117,12 @@ async function analyzeSentiment(tensor: tf.Tensor) {
   };
 }
 
-async function detectBias(tensor: tf.Tensor) {
+async function detectBias(tensor: any) {
   if (!models.biasDetector) {
     throw new Error('Bias detection model not initialized');
   }
 
-  const prediction = await models.biasDetector.predict(tensor) as tf.Tensor;
+  const prediction = await models.biasDetector.predict(tensor) as any;
   const scores = await prediction.data();
   prediction.dispose();
 

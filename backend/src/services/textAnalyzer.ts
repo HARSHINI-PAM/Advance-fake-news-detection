@@ -1,5 +1,5 @@
 import { setupLogger } from '../utils/logger';
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 import natural from 'natural';
 import { TfIdf } from 'natural';
 import * as use from '@tensorflow-models/universal-sentence-encoder';
@@ -28,11 +28,12 @@ export interface TextAnalysisResult {
 }
 
 class TextAnalyzer {
-  private tfidf: TfIdf;
-  private tokenizer: natural.WordTokenizer;
-  private sentimentAnalyzer: natural.SentimentAnalyzer;
-  private useModel: use.UniversalSentenceEncoder | null = null;
-  private classifier: tf.Sequential | null = null;
+  private tfidf: any;
+  private tokenizer: any;
+  private sentimentAnalyzer: any;
+  // @ts-ignore
+  private useModel: any = null;
+  private classifier: any = null;
   private initialized = false;
 
   constructor() {
@@ -75,7 +76,7 @@ class TextAnalyzer {
     const tokens = this.tokenizer.tokenize(text.toLowerCase());
     let score = 0;
     
-    tokens?.forEach(token => {
+    tokens?.forEach((token: any) => {
       const tfidfScore = this.tfidf.tfidf(token, 0) - this.tfidf.tfidf(token, 1);
       score += tfidfScore;
     });
@@ -173,18 +174,33 @@ class TextAnalyzer {
     let suspiciousIndicators: string[] = [];
     let factCheckResult: FactCheckResult | null = null;
 
+    let readabilityScore = this.calculateReadabilityScore(text);
+    let sourceTrustworthiness = this.calculateSourceTrustworthiness(text);
+
     try {
       if (this.useModel && this.classifier) {
         const embeddings = await this.useModel.embed([text]);
-        const predTensor = this.classifier.predict(embeddings) as tf.Tensor;
+        const predTensor = this.classifier.predict(embeddings) as any;
         const predValue = (await predTensor.data())[0];
         mlConfidence = predValue;
         reasoning.push(`Internal ML model confidence: ${(mlConfidence * 100).toFixed(1)}%`);
         predTensor.dispose();
         embeddings.dispose();
       } else {
-        reasoning.push('Model not initialized');
-        suspiciousIndicators.push('The internal ML model is not available.');
+        // Rule-based fallback if ML model is not available
+        reasoning.push('ML model not available, using rule-based analysis.');
+        mlConfidence = 0.5;
+        // Simple rule: if text contains many sensationalist words, lower confidence
+        const lowerText = text.toLowerCase();
+        let penalty = 0;
+        this.sensationalistWords.forEach(word => {
+          if (lowerText.includes(word)) penalty += 0.1;
+        });
+        mlConfidence = Math.max(0, 1 - penalty);
+        if (penalty > 0) {
+          reasoning.push(`Sensationalist language detected, confidence reduced by ${penalty * 100}%`);
+          suspiciousIndicators.push('Sensationalist language present');
+        }
       }
     } catch (error: any) {
         logger.error('Error during ML model analysis:', error);
@@ -192,7 +208,6 @@ class TextAnalyzer {
         suspiciousIndicators.push('The internal ML model could not process the text.');
         mlConfidence = 0; // Set to lowest confidence on failure
     }
-
 
     try {
         // Perform external fact-checking
@@ -207,7 +222,6 @@ class TextAnalyzer {
         reasoning.push('External fact-checking service failed.');
         suspiciousIndicators.push('Could not connect to external fact-checking service.');
     }
-
 
     // Blend the scores
     const finalConfidence = this.calculateBlendedScore(mlConfidence, factCheckResult);
@@ -224,8 +238,8 @@ class TextAnalyzer {
         mlMetrics: {
           modelConfidence: mlConfidence * 100,
           credibilityScore: finalConfidence * 10,
-          readabilityScore: 0,
-          sourceTrustworthiness: 0
+          readabilityScore: readabilityScore, // Always provide calculated value
+          sourceTrustworthiness: sourceTrustworthiness * 100 // Always provide calculated value
         },
         analysisMethod: 'USE + Logistic Regression + Fact-Check'
       },

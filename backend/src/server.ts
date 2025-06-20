@@ -3,11 +3,7 @@ import cors from 'cors';
 import { setupLogger } from './utils/logger';
 import { textAnalyzer } from './services/textAnalyzer';
 import { MediaAnalyzer } from './services/mediaAnalyzer';
-import multer, { FileFilterCallback } from 'multer';
-
-interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-}
+import multer from 'multer';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,7 +20,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
@@ -78,7 +74,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Text analysis endpoint
-app.post('/api/analyze/text', async (req: Request, res: Response) => {
+app.post('/api/analyze/text', async (req: any, res: any) => {
   try {
     const { text, title, source } = req.body;
     
@@ -99,7 +95,7 @@ app.post('/api/analyze/text', async (req: Request, res: Response) => {
 });
 
 // Media analysis endpoints
-app.post('/api/media/analyze/image', upload.single('image'), async (req: MulterRequest, res: Response) => {
+app.post('/api/media/analyze/image', upload.single('image'), async (req: any, res: any) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
@@ -121,7 +117,7 @@ app.post('/api/media/analyze/image', upload.single('image'), async (req: MulterR
   }
 });
 
-app.post('/api/media/analyze/video', upload.single('video'), async (req: MulterRequest, res: Response) => {
+app.post('/api/media/analyze/video', upload.single('video'), async (req: any, res: any) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No video file provided' });

@@ -7,9 +7,9 @@ import path from 'path';
 const logger = setupLogger();
 
 export class MediaAnalyzer {
-  private imageModel: tf.GraphModel | null = null;
-  private deepfakeModel: tf.GraphModel | null = null;
-  private faceDetectionModel: tf.GraphModel | null = null;
+  private imageModel: any = null;
+  private deepfakeModel: any = null;
+  private faceDetectionModel: any = null;
   private readonly MODEL_PATH = process.env.MODEL_PATH || './models';
 
   async initialize() {
@@ -48,7 +48,7 @@ export class MediaAnalyzer {
 
       // Convert image to tensor
       const tensor = tf.node.decodeImage(Buffer.from(imageBuffer));
-      const preprocessed = this.preprocessImage(tensor as tf.Tensor3D);
+      const preprocessed = this.preprocessImage(tensor as any);
 
       // Run manipulation detection
       const predictions = await this.detectImageManipulation(preprocessed);
@@ -86,7 +86,7 @@ export class MediaAnalyzer {
           analyzedAt: new Date().toISOString()
         },
         errorLevel: elaScore,
-        confidence: predictions.confidence,
+        confidence: Math.max(...Array.from(predictions.confidence as any as number[])),
         faceAnalysis,
         warnings: [],
         verificationStatus: finalManipulationScore > 0.7 ? 'manipulated' : 'verified'
@@ -154,34 +154,34 @@ export class MediaAnalyzer {
     }
   }
 
-  private preprocessImage(tensor: tf.Tensor3D): tf.Tensor3D {
+  private preprocessImage(tensor: any): any {
     // Implement image preprocessing
     return tensor;
   }
 
-  private async detectImageManipulation(tensor: tf.Tensor3D) {
+  private async detectImageManipulation(tensor: any) {
     if (!this.imageModel) {
       throw new Error('Image manipulation model not initialized');
     }
 
     const prediction = await this.imageModel.predict(
       tensor.expandDims(0)
-    ) as tf.Tensor;
+    ) as any;
 
     const score = await prediction.data();
     prediction.dispose();
 
     return {
       manipulationScore: score[0],
-      confidence: Math.max(...Array.from(score))
+      confidence: Math.max(...Array.from(score as any as number[]))
     };
   }
 
-  private async analyzeVideoFrame(frame: tf.Tensor3D) {
+  private async analyzeVideoFrame(frame: any) {
     return this.detectImageManipulation(frame);
   }
 
-  private async analyzeFaceConsistency(frames: tf.Tensor3D[]) {
+  private async analyzeFaceConsistency(frames: any[]) {
     return {
       detected: false,
       anomalies: []
@@ -239,12 +239,12 @@ export class MediaAnalyzer {
     };
   }
 
-  private async extractVideoFrames(videoBuffer: Buffer): Promise<tf.Tensor3D[]> {
+  private async extractVideoFrames(videoBuffer: Buffer): Promise<any[]> {
     // Implement video frame extraction
     return [];
   }
 
-  private async detectObjects(tensor: tf.Tensor3D): Promise<string[]> {
+  private async detectObjects(tensor: any): Promise<string[]> {
     // Implement object detection
     return [];
   }
@@ -283,14 +283,14 @@ export class MediaAnalyzer {
     );
   }
 
-  private async analyzeFaces(tensor: tf.Tensor3D) {
+  private async analyzeFaces(tensor: any) {
     if (!this.faceDetectionModel) {
       throw new Error('Face detection model not initialized');
     }
 
     const prediction = await this.faceDetectionModel.predict(
       tensor.expandDims(0)
-    ) as tf.Tensor;
+    ) as any;
 
     const faceData = await prediction.data();
     prediction.dispose();

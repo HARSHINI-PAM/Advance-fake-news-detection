@@ -4,6 +4,7 @@ import { SourceVerifier } from './sourceVerification';
 import { MediaAnalyzer } from './mediaAnalysis';
 import { analyzeText } from '../models/modelLoader';
 import { AnalysisResult } from '../types/analysis';
+// @ts-ignore
 import WebSocket from 'ws';
 
 const logger = setupLogger();
@@ -144,7 +145,7 @@ export class LiveMonitor extends EventEmitter {
       }
     });
 
-    ws.on('error', (error) => {
+    ws.on('error', (error: any) => {
       logger.error(`WebSocket error for ${source.url}:`, error);
       this.emit('source_error', { source: source.url, error });
     });
