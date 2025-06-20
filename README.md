@@ -44,22 +44,15 @@ Get a Google Fact Check API key: Google Fact Check API Guide
 
 Create a .env file in the backend directory:
 
-env
-Copy
-Edit
 FACT_CHECK_API_KEY="YOUR_API_KEY_HERE"
+
 4. Run the Application
 Start Backend
-bash
-Copy
-Edit
 cd backend
 npm run build
 npm start
+
 Start Frontend
-bash
-Copy
-Edit
 cd ..
 npm run dev
 Frontend: http://localhost:5173
@@ -68,15 +61,8 @@ Backend API: http://localhost:3000
 
 🧠 API Endpoints
 Text Analysis
-http
-Copy
-Edit
 POST /api/analyze/text
 Body:
-
-json
-Copy
-Edit
 {
   "text": "string",
   "title": "string (optional)",
@@ -86,31 +72,23 @@ Response:
 AI prediction, confidence, reasoning, suspicious indicators, fact-check results
 
 Media Analysis
-http
-Copy
-Edit
+
 POST /api/media/analyze/image
 Content-Type: multipart/form-data
 
 Field: image
 
-http
-Copy
-Edit
+
 POST /api/media/analyze/video
 Content-Type: multipart/form-data
 
 Field: video
 
 Health Check
-http
-Copy
-Edit
+
 GET /health
 🖥️ Project Structure
-csharp
-Copy
-Edit
+
 News-Filter/
 ├── backend/         # Express + AI/ML backend
 ├── src/             # Frontend (React, Vite)
