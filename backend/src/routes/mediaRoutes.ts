@@ -1,4 +1,5 @@
 import express from 'express';
+// @ts-ignore
 import multer from 'multer';
 import { MediaAnalyzer } from '../services/mediaAnalysis';
 import { setupLogger } from '../utils/logger';
@@ -12,7 +13,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     // Accept images and videos
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
@@ -28,7 +29,7 @@ mediaAnalyzer.initialize().catch(error => {
 });
 
 // POST /api/media/analyze/image
-router.post('/analyze/image', async (req, res) => {
+router.post('/analyze/image', async (req: any, res: any) => {
   try {
     const { imageUrl } = req.body;
     if (!imageUrl) {
@@ -49,7 +50,7 @@ router.post('/analyze/image', async (req, res) => {
 });
 
 // POST /api/media/analyze/video
-router.post('/analyze/video', async (req, res) => {
+router.post('/analyze/video', async (req: any, res: any) => {
   try {
     const { videoUrl } = req.body;
     if (!videoUrl) {

@@ -12,7 +12,7 @@ sourceVerifier.initialize().catch((error: any) => {
 });
 
 // POST /api/source/verify
-router.post('/verify', async (req, res) => {
+router.post('/verify', async (req: any, res: any) => {
   try {
     const { url, content } = req.body;
     
@@ -59,7 +59,7 @@ router.get('/trusted', async (req, res) => {
 });
 
 // POST /api/source/batch-verify
-router.post('/batch-verify', async (req, res) => {
+router.post('/batch-verify', async (req: any, res: any) => {
   try {
     const { urls } = req.body;
 

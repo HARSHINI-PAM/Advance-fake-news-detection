@@ -18,8 +18,9 @@ const SPECIAL_TOKENS = {
 };
 
 export class TransformerAnalyzer {
-  private model: tf.LayersModel | null = null;
-  private useModel: use.UniversalSentenceEncoder | null = null;
+  private model: any = null;
+  // @ts-ignore
+  private useModel: any = null;
   private toxicityModel: any = null;
   private tokenizer: any = null;
 
@@ -30,17 +31,17 @@ export class TransformerAnalyzer {
       const dense1 = tf.layers.dense({
         units: 256,
         activation: 'relu'
-      }).apply(input) as tf.SymbolicTensor;
+      }).apply(input) as any;
       
       const dense2 = tf.layers.dense({
         units: 128,
         activation: 'relu'
-      }).apply(dense1) as tf.SymbolicTensor;
+      }).apply(dense1) as any;
       
       const output = tf.layers.dense({
         units: 2,
         activation: 'softmax'
-      }).apply(dense2) as tf.SymbolicTensor;
+      }).apply(dense2) as any;
 
       this.model = tf.model({ inputs: input, outputs: output });
       this.model.compile({
@@ -67,7 +68,7 @@ export class TransformerAnalyzer {
       const paddedTokens = tokens.slice(0, 512).concat(Array(512 - tokens.length).fill(''));
       const inputTensor = tf.tensor2d([paddedTokens.map(t => t.length)], [1, 512]);
       
-      const prediction = await this.model.predict(inputTensor) as tf.Tensor;
+      const prediction = await this.model.predict(inputTensor) as any;
       const scores = await prediction.data();
       
       // Clean up tensors
@@ -126,7 +127,7 @@ export class TransformerAnalyzer {
     return reasons;
   }
 
-  private async createTransformerModel(): Promise<tf.LayersModel> {
+  private async createTransformerModel(): Promise<any> {
     // Simulate BERT-like architecture
     const input = tf.input({ shape: [MAX_SEQ_LENGTH] });
     
@@ -140,17 +141,17 @@ export class TransformerAnalyzer {
     // Transformer blocks
     let x = embedding;
     for (let i = 0; i < 12; i++) { // 12 transformer layers
-      x = this.transformerBlock(x as tf.SymbolicTensor, 768, 12); // 12 attention heads
+      x = this.transformerBlock(x as any, 768, 12); // 12 attention heads
     }
 
     // Classification head
     const pooled = tf.layers.globalAveragePooling1d().apply(x);
     const classificationOutput = tf.layers.dense({ units: 2, activation: 'softmax' })
-      .apply(pooled) as tf.SymbolicTensor;
+      .apply(pooled) as any;
 
     // Attention scores
     const attentionOutput = tf.layers.dense({ units: MAX_SEQ_LENGTH })
-      .apply(pooled) as tf.SymbolicTensor;
+      .apply(pooled) as any;
 
     return tf.model({
       inputs: input,
@@ -159,31 +160,31 @@ export class TransformerAnalyzer {
   }
 
   private transformerBlock(
-    input: tf.SymbolicTensor,
+    input: any,
     hiddenSize: number,
     numHeads: number
-  ): tf.SymbolicTensor {
+  ): any {
     // Multi-head self-attention
-    const attention = tf.layers.dense({ units: 512, activation: 'relu' }).apply([input, input, input]) as tf.SymbolicTensor;
+    const attention = tf.layers.dense({ units: 512, activation: 'relu' }).apply([input, input, input]) as any;
 
     // Add & normalize
-    const added = tf.layers.add().apply([input, attention]) as tf.SymbolicTensor;
+    const added = tf.layers.add().apply([input, attention]) as any;
     const normalized = tf.layers.layerNormalization()
-      .apply(added) as tf.SymbolicTensor;
+      .apply(added) as any;
 
     // Feed-forward network
     const dense1 = tf.layers.dense({
       units: hiddenSize * 4,
       activation: 'relu'
-    }).apply(normalized) as tf.SymbolicTensor;
+    }).apply(normalized) as any;
 
     const dense2 = tf.layers.dense({
       units: hiddenSize
-    }).apply(dense1) as tf.SymbolicTensor;
+    }).apply(dense1) as any;
 
     // Add & normalize
-    const added2 = tf.layers.add().apply([normalized, dense2]) as tf.SymbolicTensor;
-    return tf.layers.layerNormalization().apply(added2) as tf.SymbolicTensor;
+    const added2 = tf.layers.add().apply([normalized, dense2]) as any;
+    return tf.layers.layerNormalization().apply(added2) as any;
   }
 
   private async tokenize(text: string): Promise<number[]> {
@@ -207,8 +208,8 @@ export class TransformerAnalyzer {
   }
 
   private async processResults(
-    classificationLogits: tf.Tensor,
-    attentionScores: tf.Tensor
+    classificationLogits: any,
+    attentionScores: any
   ) {
     const [fakeScore, realScore] = await classificationLogits.data();
     const attention = await attentionScores.data();
